@@ -19,17 +19,18 @@ s3_client = boto3.client('s3',
 def save_message_to_s3(destination, message):
     s3_client.put_object(
         Bucket=S3_BUCKET,
-        Key=f'{destination}/messages.json',
-        Body=json.dumps(message)  # Convert message to JSON string
+        Key=f'{destination}_to_{destination}/messages.json',  # Überprüfe diesen Key
+        Body=json.dumps(message)
     )
 
 def get_messages_from_s3(station):
     try:
-        response = s3_client.get_object(Bucket=S3_BUCKET, Key=f'{station}/messages.json')
+        response = s3_client.get_object(Bucket=S3_BUCKET, Key=f'{station}_to_{station}/messages.json')  # Überprüfe diesen Key
         data = response['Body'].read().decode('utf-8')
-        return json.loads(data)  # Convert JSON string to Python object
+        return json.loads(data)
     except s3_client.exceptions.NoSuchKey:
-        return []  # Return an empty list if no such key
+        return []
+
 
 # API für Empfangen von Nachrichten
 @app.route('/download', methods=['POST'])
