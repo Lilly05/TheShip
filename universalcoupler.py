@@ -37,7 +37,7 @@ def get_messages_from_s3(source, destination):
 
 
 # API für Empfangen von Nachrichten
-@app.route('/<station>/download', methods=['POST'])
+@app.route('/<station>/receive', methods=['POST'])
 def download():
     try:
         data = request.json
@@ -50,7 +50,7 @@ def download():
         return jsonify({"kind": "error", "message": str(e)}), 500
 
 # API für Senden von Nachrichten
-@app.route('/<station>/upload', methods=['POST'])
+@app.route('/<station>/send', methods=['POST'])
 def upload():
     try:
         data = request.json
