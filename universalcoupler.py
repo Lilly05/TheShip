@@ -5,7 +5,7 @@ import json
 app = Flask(__name__)
 
 # S3 Konfiguration (hardcodiert)
-S3_HOST = 'http://192.168.100.17:9000'
+S3_HOST = 'http://192.168.100.17:2016'
 S3_BUCKET = 'theship-permastore'
 S3_ACCESS_KEY = 'theship'
 S3_SECRET_KEY = 'theship1234'
