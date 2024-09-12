@@ -18,6 +18,7 @@ s3_client = boto3.client('s3',
 
 def save_message_to_s3(source, destination, message):
     key = f'{source}/to_{destination}/messages.json'
+    print(key)
     s3_client.put_object(
         Bucket=S3_BUCKET,
         Key=key,
