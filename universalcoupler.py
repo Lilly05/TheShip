@@ -38,7 +38,7 @@ def get_messages_from_s3(source, destination):
 
 # API für Empfangen von Nachrichten
 @app.route('/<station>/receive', methods=['POST'])
-def download():
+def download(station):
     try:
         data = request.json
         source = data['source']
@@ -51,7 +51,7 @@ def download():
 
 # API für Senden von Nachrichten
 @app.route('/<station>/send', methods=['POST'])
-def upload():
+def upload(station):
     try:
         data = request.json
         source = data['source']
