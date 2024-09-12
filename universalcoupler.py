@@ -41,7 +41,7 @@ def download(station):
         destination = data['destination']
         message = get_messages_from_s3(source, destination)
         save_message_to_s3(destination, message)
-        return jsonify({"kind": "success"}), 200, {'Content-Type': 'text/css; charset=utf-8'}
+        return jsonify({"kind": "success"}), 200, {'Content-Type': 'application/json'}
     except Exception as e:
         return jsonify({"kind": "error", "message": str(e)}), 500
 
@@ -53,7 +53,7 @@ def upload(station):
         destination = data['destination']
         message = data['data']
         save_message_to_s3(source, destination, message)
-        return jsonify({"kind": "success"}), 200, {'Content-Type': 'text/css; charset=utf-8'}
+        return jsonify({"kind": "success"}), 200, {'Content-Type': 'application/json'}
     except Exception as e:
         return jsonify({"kind": "error", "message": str(e)}), 500
 
