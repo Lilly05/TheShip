@@ -16,20 +16,23 @@ s3_client = boto3.client('s3',
                          aws_access_key_id=S3_ACCESS_KEY,
                          aws_secret_access_key=S3_SECRET_KEY)
 
-def save_message_to_s3(destination, message):
+def save_message_to_s3(source, destination, message):
+    key = f'{source}/to_{destination}/messages.json'
     s3_client.put_object(
         Bucket=S3_BUCKET,
-        Key=f'{destination}_to_{destination}/messages.json',  # Überprüfe diesen Key
+        Key=key,
         Body=json.dumps(message)
     )
 
-def get_messages_from_s3(station):
+def get_messages_from_s3(source, destination):
+    key = f'{source}/to_{destination}/messages.json'
     try:
-        response = s3_client.get_object(Bucket=S3_BUCKET, Key=f'{station}_to_{station}/messages.json')  # Überprüfe diesen Key
+        response = s3_client.get_object(Bucket=S3_BUCKET, Key=key)
         data = response['Body'].read().decode('utf-8')
         return json.loads(data)
     except s3_client.exceptions.NoSuchKey:
         return []
+
 
 
 # API für Empfangen von Nachrichten
