@@ -20,6 +20,7 @@ def download(station):
         binary_data = base64.b64decode(msg)
 
         binary_array = list(binary_data)
+        print(binary_array)
 
         return jsonify({
             "kind": "success",
@@ -38,10 +39,9 @@ def download(station):
 def upload(station):
     try:
 
-        if request.is_json:
-            data = request.get_json()
-        else:
-            data = request.form if request.form else json.loads(request.data.decode('utf-8'))
+        data = request.get_json(force=True)
+
+        print(data)
 
         source = data.get('source')
         data_array = data.get('data')
