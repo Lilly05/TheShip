@@ -33,7 +33,7 @@ def download(station):
 
         return jsonify({"kind": "success", "messages": [{"destination": dest, "data": data_array}]}), 200
     except Exception as e:
-        return jsonify({"kind": "error", "message": str(e)}), 500
+        return jsonify({"kind": "error", "message": e}), 500
 
 @app.route('/<station>/send', methods=['POST'])
 def upload(station):
@@ -47,7 +47,7 @@ def upload(station):
 
         return jsonify({"kind": "success"}), 200
     except Exception as e:
-        return jsonify({"kind": "error", "message": str(e)}), 500
+        return jsonify({"kind": "error", "message": e}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=2023)
