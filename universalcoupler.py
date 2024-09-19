@@ -37,8 +37,12 @@ def download(station):
 @app.route('/<station>/send', methods=['POST'])
 def upload(station):
     try:
-        data = request.get_json()
-        
+
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.form if request.form else json.loads(request.data.decode('utf-8'))
+
         source = data.get('source')
         data_array = data.get('data')
 
