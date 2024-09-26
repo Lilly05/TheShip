@@ -7,9 +7,9 @@ import json
 app = Flask(__name__)
 
 # Funktion zum Herunterladen von Daten über WebSockets von Elyse Terminal
-async def download_data():
+async def download_data(station_data):
     uri = "ws://192.168.100.17:2026/api"
-    ttry:
+    try:
         async with websockets.connect(uri) as websocket:
             # Dynamisches Senden der Daten, die von der Anfrage kommen
             await websocket.send(json.dumps(station_data))
@@ -50,8 +50,11 @@ async def upload_data_to_azura(data):
 @app.route('/<station>/receive', methods=['POST'])
 def download(station):
     try:
+        # Station-Daten aus der POST-Anfrage abrufen
+        station_data = request.get_json(force=True)
+
         # Starte die WebSocket-Kommunikation zum Herunterladen von Daten
-        data = asyncio.run(download_data())
+        data = asyncio.run(download_data(station_data))
         if "error" in data:
             raise Exception(data["error"])
         
