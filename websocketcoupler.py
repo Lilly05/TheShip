@@ -37,6 +37,7 @@ def on_message(ws, message):
                 }
             ]
         }
+        print(global_response)
 
     except Exception as e:
         print("Fehler beim Verarbeiten der Nachricht:", e)
@@ -44,18 +45,13 @@ def on_message(ws, message):
 def on_error(ws, error):
     print("WebSocket Fehler:", error)
 
-def on_close(ws):
-    print("### closed ###")
-
 if __name__ == "__main__":
+    print("test")
     ws_url = "ws://192.168.100.17:2026/api"
     ws = websocket.WebSocketApp(ws_url,
                                 on_open=on_open,
                                 on_message=on_message,
-                                on_error=on_error,
-                                on_close=on_close)
-    ws.run_forever()
-
+                                on_error=on_error)
 
 @app.route('/<station>/receive', methods=['POST'])
 def download(station):
