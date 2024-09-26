@@ -9,7 +9,7 @@ app = Flask(__name__)
 WS_RECEIVE_URL = 'ws://192.168.100.17:2029/receive'
 WS_SEND_URL = 'ws://192.168.100.17:2030/put_message'
 
-@app.route('/api/<station>/receive', methods=['POST'])
+@app.route('/<station>/receive', methods=['POST'])
 def download(station):
     try:
         # WebSocket-Verbindung zum Empfang herstellen
@@ -46,7 +46,7 @@ def download(station):
         return jsonify({"kind": "error", "message": str(e)}), 500
 
 
-@app.route('/api/<station>/send', methods=['POST'])
+@app.route('/<station>/send', methods=['POST'])
 def upload(station):
     try:
         data = request.get_json(force=True)
