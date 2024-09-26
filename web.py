@@ -1,98 +1,71 @@
 from flask import Flask, request, jsonify
-import asyncio
-import websockets
+import requests
 import base64
 import json
 
 app = Flask(__name__)
 
-# Funktion zum Herunterladen von Daten über WebSockets von Elyse Terminal
-async def download_data():
-    uri = "ws://192.168.100.17:2026/api"
+# Elyse Terminal Endpunkt (zum Herunterladen von Daten)
+ELYSE_TERMINAL_URL = 'http://192.168.100.17:2029/receive'
+# Azura Station Endpunkt (zum Hochladen von Daten)
+AZURA_STATION_URL = 'http://192.168.100.17:2030/put_message'
+
+# Endpunkt zum Herunterladen der Daten von Elyse Terminal und sie im Permastore zu speichern
+@app.route('/elyse/download', methods=['POST'])
+def download_from_elyse():
     try:
-        async with websockets.connect(uri) as websocket:
-            # Nachricht an Elyse Terminal senden
-            data = {"source": "Elyse Terminal", "msg": [1, 2, 3, 4]}
-            await websocket.send(json.dumps(data))
+        # Anfrage an Elyse Terminal, um die Forschungsdaten herunterzuladen
+        response = requests.post(ELYSE_TERMINAL_URL)
+        response_data = response.json()
 
-            # Antwort von Elyse Terminal empfangen
-            response = await websocket.recv()
-            print(f"Empfangen von Elyse Terminal: {response}")
+        # Extrahiere die empfangenen Nachrichten
+        received_message = response_data['received_messages'][0]
+        dest = received_message['dest']
+        msg = received_message['msg']
 
-            # Verarbeitung der empfangenen Nachricht
-            received_message = json.loads(response)
-            msg = received_message['msg']
-            dest = received_message['destination']
+        # Dekodiere die Base64-kodierten Daten
+        binary_data = base64.b64decode(msg)
+        binary_array = list(binary_data)  # Konvertiere sie in ein Array
 
-            # Dekodieren der Base64-kodierten Nachricht
-            binary_data = base64.b64decode(msg)
-            binary_array = list(binary_data)  # Konvertiere die binäre Nachricht in ein Array
-            return {"destination": dest, "data": binary_array}
-    except Exception as e:
-        return {"error": str(e)}
+        print(f"Daten von Elyse Terminal erhalten: {binary_array}")
 
-# Funktion zum Hochladen von Daten über WebSockets zu Azura Station
-async def upload_data_to_azura(data):
-    uri = "ws://azura.station:1000/api"
-    try:
-        async with websockets.connect(uri) as websocket:
-            # Senden der Daten an Azura Station
-            await websocket.send(json.dumps(data))
-            print(f"Daten an Azura Station gesendet: {data}")
-
-            # Empfang der Bestätigung von Azura Station
-            confirmation = await websocket.recv()
-            print(f"Bestätigung von Azura Station: {confirmation}")
-            return confirmation
-    except Exception as e:
-        return {"error": str(e)}
-
-# Flask-Endpunkt zum Herunterladen von Daten von Elyse Terminal
-@app.route('/<station>/receive', methods=['POST'])
-def download(station):
-    try:
-        # Starte die WebSocket-Kommunikation zum Herunterladen von Daten
-        data = asyncio.run(download_data())
-        if "error" in data:
-            raise Exception(data["error"])
-        
+        # Die empfangenen Daten erfolgreich zurückgeben
         return jsonify({
             "kind": "success",
-            "messages": [
-                {
-                    "destination": data['destination'],
-                    "data": data['data']
-                }
-            ]
+            "message": "Daten erfolgreich von Elyse Terminal heruntergeladen",
+            "data": binary_array,
+            "destination": dest
         }), 200
+
     except Exception as e:
         return jsonify({"kind": "error", "message": str(e)}), 500
 
-# Flask-Endpunkt zum Hochladen von Daten zu Azura Station
-@app.route('/<station>/send', methods=['POST'])
-def upload(station):
+# Endpunkt zum Hochladen der Daten zu Azura Station
+@app.route('/azura/upload', methods=['POST'])
+def upload_to_azura():
     try:
         # JSON-Daten von der Anfrage abrufen
-        data = request.get_json(force=True)
-        source = data.get('source')
-        data_array = data.get('data')
+        request_data = request.get_json()
+        source = request_data.get('source')
+        data_array = request_data.get('data')
 
-        # Konvertiere die Liste der Daten in binäres Format und kodiert sie in Base64
+        # Konvertiere die Liste in binäre Daten
         binary_data = bytes(data_array)
+
+        # Base64-kodiere die Daten
         base64_encoded_data = base64.b64encode(binary_data).decode('utf-8')
 
-        # Bereite die Nachricht vor, um sie zu Azura Station zu senden
-        message = {
+        # Daten zu Azura Station hochladen
+        upload_response = requests.post(AZURA_STATION_URL, json={
             "sending_station": source,
             "base64data": base64_encoded_data
-        }
+        })
 
-        # Starte die WebSocket-Kommunikation zum Hochladen von Daten
-        confirmation = asyncio.run(upload_data_to_azura(message))
-        if "error" in confirmation:
-            raise Exception(confirmation["error"])
-        
-        return jsonify({"kind": "success"}), 200
+        print(f"Daten an Azura Station gesendet: {data_array}")
+
+        # Bestätigung der erfolgreichen Übertragung
+        return jsonify({"kind": "success", "message": "Daten erfolgreich zu Azura Station hochgeladen"}), 200
+
     except Exception as e:
         return jsonify({"kind": "error", "message": str(e)}), 500
 
