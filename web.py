@@ -7,9 +7,9 @@ import json
 app = Flask(__name__)
 
 # Funktion zum Herunterladen von Daten über WebSockets von Elyse Terminal
-async def download_data_from_elyse(station_data):
+async def download_data():
     uri = "ws://192.168.100.17:2026/api"
-    try:
+    ttry:
         async with websockets.connect(uri) as websocket:
             # Dynamisches Senden der Daten, die von der Anfrage kommen
             await websocket.send(json.dumps(station_data))
@@ -35,7 +35,7 @@ async def upload_data_to_azura(data):
     uri = "ws://azura.station:1000/api"
     try:
         async with websockets.connect(uri) as websocket:
-            # Senden der dynamisch erhaltenen Daten
+            # Senden der Daten an Azura Station
             await websocket.send(json.dumps(data))
             print(f"Daten an Azura Station gesendet: {data}")
 
@@ -50,15 +50,11 @@ async def upload_data_to_azura(data):
 @app.route('/<station>/receive', methods=['POST'])
 def download(station):
     try:
-        # Daten aus der Anfrage abrufen
-        station_data = request.get_json(force=True)
-
         # Starte die WebSocket-Kommunikation zum Herunterladen von Daten
-        data = asyncio.run(download_data_from_elyse(station_data))
+        data = asyncio.run(download_data())
         if "error" in data:
             raise Exception(data["error"])
-
-        # Erfolgreiche Rückgabe der empfangenen Daten
+        
         return jsonify({
             "kind": "success",
             "messages": [
@@ -94,7 +90,7 @@ def upload(station):
         confirmation = asyncio.run(upload_data_to_azura(message))
         if "error" in confirmation:
             raise Exception(confirmation["error"])
-
+        
         return jsonify({"kind": "success"}), 200
     except Exception as e:
         return jsonify({"kind": "error", "message": str(e)}), 500
