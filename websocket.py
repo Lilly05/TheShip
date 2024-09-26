@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import base64
 import json
-import websocket
+from websocket import WebSocket  # Korrigierter Import von WebSocket
 
 app = Flask(__name__)
 
@@ -13,7 +13,7 @@ WS_SEND_URL = 'ws://192.168.100.17:2030/put_message'
 def download(station):
     try:
         # WebSocket-Verbindung zum Empfang herstellen
-        ws = websocket.WebSocket()
+        ws = WebSocket()
         ws.connect(WS_RECEIVE_URL)
 
         # Nachricht empfangen
@@ -62,7 +62,7 @@ def upload(station):
         print(base64_encoded_data)
 
         # WebSocket-Verbindung zum Senden herstellen
-        ws = websocket.WebSocket()
+        ws = WebSocket()
         ws.connect(WS_SEND_URL)
 
         # Nachricht senden
